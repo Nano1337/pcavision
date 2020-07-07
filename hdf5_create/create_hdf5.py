@@ -66,7 +66,13 @@ The HDF5 set will be of the following form:
 .
 """
 
-
+def train_ktrans_to_h5(root_dir, h5):
+    sub_dirs = [x[0] for x in os.walk(root_dir)]
+    for directory in sub_dirs:
+        print(directory)
+        file_list = glob.glob(directory + '/*.mhd')
+        file_list += glob.glob(directory + '/*.zraw')
+        print(file_list)
 def dicom_to_h5(root_dir, h5):
     sub_dirs = [x[0] for x in os.walk(root_dir)]  # Gather all subdirectories in 'root_dir'
     for directory in sub_dirs:
@@ -101,6 +107,7 @@ def dicom_to_h5(root_dir, h5):
         else:
             create = True
 
+        # pathname = patient_id + '/' + dcm_descr + '/lesions/' + finding_id
         if create:
             group = h5.create_group(data_path)
             pixeldata = group.create_dataset('pixel_array', data=load_dicom_series(directory))
@@ -148,31 +155,19 @@ def train_csv_to_h5(csv_file, h5):
                 group.attrs.create('Zone', zone, dtype='S10')
                 group.attrs.create('ClinSig', clin_sig, dtype='S10')
 
-            # try:
-            #     group = h5.create_group(pathname)
-            #     group.attrs.create('Name', name)
-            #     group.attrs.create('Pos', pos, dtype='S10')
-            #     group.attrs.create('WorldMatrix', world_matrix, dtype='S10')
-            #     group.attrs.create('ijk', ijk, dtype='S10')
-            #     group.attrs.create('TopLevel', top_level, dtype='S10')
-            #     group.attrs.create('SpacingBetween', spacing_between, dtype='S10')
-            #     group.attrs.create('VoxelSpacing', voxel_spacing, dtype='S10')
-            #     group.attrs.create('Dim', dim, dtype='S10')
-            #     group.attrs.create('Zone', zone, dtype='S10')
-            #     group.attrs.create('ClinSig', clin_sig, dtype='S10')
-            # except ValueError:
-            #     print('Skipping duplicate {}'.format(pathname))
-
 
 if __name__ == "__main__":
     """Example usage: """
     # Example usage for train set
-    h5file = h5py.File('prostatex-train.hdf5', 'w')
+    h5file = h5py.File('prostatex-train1.hdf5', 'w') #so I don't mess up compiled file
     dcm_folder = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\PROSTATEx-DICOM\\train'
+    ktrans_folder = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-Ktrans-train'
+
     images_train_csv = 'ProstateX-Images-Train-NEW.csv'
 
-    dicom_to_h5(dcm_folder, h5file)
-    train_csv_to_h5(images_train_csv, h5file)
+    # dicom_to_h5(dcm_folder, h5file)
+    # train_csv_to_h5(images_train_csv, h5file)
+    train_ktrans_to_h5(ktrans_folder, h5file)
 
     # Example usage for test set
     # h5file = h5py.File('prostatex-test.hdf5', 'w')
