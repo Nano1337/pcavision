@@ -67,7 +67,7 @@ def dicom_to_h5(root_dir, h5):
             create = True
 
         if create:
-            #print(patient_id)
+            print(patient_id)
             group = h5.create_group(data_path)
             if Im_Ktrans:
                 data = sitk.GetArrayFromImage(img)
@@ -79,9 +79,9 @@ def dicom_to_h5(root_dir, h5):
 
 
 def train_csv_to_h5(csv_file, h5):
-    with open(csv_file, 'rb') as f:
+    with open(csv_file, 'r') as f:
         reader = csv.reader(f, delimiter=',')
-        reader.next()  # Skip column names
+        next(reader)  # Skip column names
         for row in reader:
             patient_id = row[0]
             name = row[1]
@@ -125,16 +125,16 @@ train_set = True
 if __name__ == "__main__":
     # Example usage
     if train_set:
-        h5file = h5py.File('prostatex-train-ALL.hdf5', 'w')
-        main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Training'
+        h5file = h5py.File('prostatex-train-ALL1.hdf5', 'w')
+        main_folder = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data'
         data_folder = main_folder + '\\All_training_data'
-        images_csv = main_folder + '\\ProstateX-TrainingLesionInformationv2\\ProstateX-Images-Train-ALL.csv'
+        images_csv = 'ProstateX-Images-Train-ALL.csv'
 
-    else:
-        h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')y
-        main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test'
-        data_folder = main_folder + '\\All_test_data'
-        images_csv = main_folder + '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test-ALL.csv'
+    # else:
+    #     h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')
+    #     main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test'
+    #     data_folder = main_folder + '\\All_test_data'
+    #     images_csv = main_folder + '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test-ALL.csv'
 
     dicom_to_h5(data_folder, h5file)
     train_csv_to_h5(images_csv, h5file)

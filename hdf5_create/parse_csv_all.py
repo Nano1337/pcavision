@@ -88,7 +88,7 @@ with open(ktrans_csv, 'r') as ktrans:
         ktrans_lst.append(row)
 
     try:
-        with open(NEW_csv, 'rb') as NEW:
+        with open(NEW_csv, 'r') as NEW:
             reader_new = csv.reader(NEW, delimiter=',')
             column_names = next(reader_new)
 
@@ -134,7 +134,7 @@ else:
     new_csv_name = 'ProstateX-Images-Test-ALL.csv'
 
 with open(new_csv_name, 'w') as csvfile:
-    writer = csv.DictWriter(csvfile, fieldnames=column_names)
+    writer = csv.DictWriter(csvfile, fieldnames=column_names, lineterminator = '\n')
     writer.writeheader()
     for row in new_lst:
         new_row = {}
