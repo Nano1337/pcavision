@@ -14,7 +14,7 @@ class Centroid:
         return '({}, {}, {})'.format(self.x, self.y, self.z)
 
 
-def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
+def extract_lesion_2d(img, centroid_position, size=None, realsize=21, imagetype='ADC'):
     if imagetype == 'T2TRA':
         if size is None:
             sizecal = math.ceil(realsize * 2)
@@ -46,7 +46,7 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file, query_words, size_px=16):
+def get_train_data(h5_file, query_words, size_px=21):
     lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     X, y, attr = get_train_data(h5_file, ['ADC'])
 
-    print(y[0])
-    print(attr[0])
+    print(y[0]) #Clinical Significance as True/False
+    print(attr[0]) #dictionary of metadata
     plt.imshow(X[0], cmap='gray')
     plt.show()
