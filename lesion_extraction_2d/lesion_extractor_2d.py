@@ -14,7 +14,7 @@ class Centroid:
         return '({}, {}, {})'.format(self.x, self.y, self.z)
 
 
-def extract_lesion_2d(img, centroid_position, size=None, realsize=21, imagetype='ADC'):
+def extract_lesion_2d(img, centroid_position, size=None, realsize=9, imagetype='ADC'):
     if imagetype == 'T2TRA':
         if size is None:
             sizecal = math.ceil(realsize * 2)
@@ -46,7 +46,7 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file, query_words, size_px=21):
+def get_train_data(h5_file, query_words, size_px=9):
     lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
@@ -83,9 +83,13 @@ if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['ADC'])
-
-    print(y[0]) #Clinical Significance as True/False
-    print(attr[0]) #dictionary of metadata
-    plt.imshow(X[0], cmap='gray')
+    X, y, attr = get_train_data(h5_file, ['Ktrans']) #gets all images of specified type
+    n = 1 #lesion number
+    min = 6 #minimum intensity
+    print(type(X[1]))
+    print(y[n]) #Clinical Significance as True/False
+    print(attr[n]) #dictionary of metadata
+    # X[n][X[n] > min] = 10
+    plt.imshow(X[n], cmap='gray')
     plt.show()
+    print(X[n])
