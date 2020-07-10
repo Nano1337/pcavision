@@ -1,12 +1,13 @@
 from matplotlib import pyplot as plt
 import h5py
 import numpy as np
+from numpy import asarray, save
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OneHotEncoder
 from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 from skimage.feature import greycomatrix, greycoprops
 import functools
-import time
+import pickle
 
 @functools.lru_cache(maxsize=None)
 def get_feature_extracts():
@@ -38,9 +39,13 @@ def get_feature_extracts():
                      5 : "ADC GLCM contrast",
                      6 : "ADC GLCM homogeneity",
                      7 : "ADC GLCM energy",
-                     8 : "ADC GLCM angular second moment"}
+                     8 : "ADC GLCM angular second moment",
+                     9 : "ADC 10%",
+                     10: "ADC average"}
 
+    # get feature vectors
     dissimilarity, correlation, contrast, homo, energy, asm = get_GLCM(X)
+    adc10vect, adcmeanvect = get_ADC_stats(X)
 
     # concatenate feature vectors column-wise
     feature_matrix = np.concatenate((feature_matrix, dissimilarity), axis=1)
@@ -49,7 +54,8 @@ def get_feature_extracts():
     feature_matrix = np.concatenate((feature_matrix, homo), axis=1)
     feature_matrix = np.concatenate((feature_matrix, energy), axis=1)
     feature_matrix = np.concatenate((feature_matrix, asm), axis=1)
-
+    feature_matrix = np.concatenate((feature_matrix, adc10vect), axis=1)
+    feature_matrix = np.concatenate((feature_matrix, adcmeanvect), axis=1)
     return feature_matrix, clinsig_vector, feature_dict
 
 def get_zone(X):
@@ -132,11 +138,23 @@ def get_clinsig_vector(X, attr):
             num += 1
     return csvector
 
+def get_ADC_stats(X):
+    i = 0
+    adc10vect = np.zeros((len(X), 1))
+    adcmeanvect = np.zeros((len(X), 1))
+    for patch in X:
+        adc10vect[i, 0] = np.percentile(patch, 10)
+        adcmeanvect[i, 0] = np.mean(patch)
+        i += 1
+    return adc10vect, adcmeanvect
+
 if __name__ == "__main__":
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
     # extract info for matching MRI type name
     X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
+    # csvector, num_positive = get_clinsig_vector(X, attr)
+    # print(num_positive/len(X))
     a, b, c = get_feature_extracts() #takes 13 minutes to run
     print("Feature Matrix")
     print(a)
@@ -144,6 +162,18 @@ if __name__ == "__main__":
     print(b)
     print("Feature Dictionary")
     print(c)
+
+    # write numpy array and dictionary to files so only have to run program once
+    save('feature_mat.npy', a)
+    save('clinsig_vect.npy', b)
+    with open('feature_dict.txt', 'wb') as handle:
+        pickle.dump(c, handle)
+
+
+
+
+
+    # Nothin to see here folks...
     # clinsigtrue, clinsigfalse = [], []
     # num = 0
     # for patch in X:
