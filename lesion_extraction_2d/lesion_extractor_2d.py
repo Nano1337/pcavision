@@ -83,8 +83,8 @@ if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['Ktrans']) #gets all images of specified type
-    n = 1 #lesion number
+    X, y, attr = get_train_data(h5_file, ['ADC']) #gets all images of specified type
+    n = 0 #lesion number
     min = 6 #minimum intensity
     print(type(X[1]))
     print(y[n]) #Clinical Significance as True/False

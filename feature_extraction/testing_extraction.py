@@ -112,13 +112,14 @@ def get_GLCM(X):
             i += 1
             continue
         else:
-            glcm = greycomatrix(patch, distances=[1], angles=[0], levels=3350, symmetric=True, normed=True)
-            dissimilarity[i, 0] = greycoprops(glcm, 'dissimilarity')[0, 0]
-            correlation[i, 0] = greycoprops(glcm, 'correlation')[0, 0]
-            contrast[i, 0] = greycoprops(glcm, 'contrast')[0, 0]
-            homo[i, 0] = greycoprops(glcm, 'homogeneity')[0, 0]
-            energy[i, 0] = greycoprops(glcm, 'energy')[0, 0]
-            asm[i, 0] = greycoprops(glcm, 'ASM')[0, 0]
+            glcm = greycomatrix(patch, distances=[1], angles=[0, np.pi/4, np.pi/2, 3*np.pi/4], levels=3350, symmetric=True, normed=True)
+            dissimilarity[i, 0] = np.sum(greycoprops(glcm, 'dissimilarity'))
+            correlation[i, 0] = np.sum(greycoprops(glcm, 'correlation'))
+            contrast[i, 0] = np.sum(greycoprops(glcm, 'contrast'))
+            homo[i, 0] = np.sum(greycoprops(glcm, 'homogeneity'))
+            energy[i, 0] = np.sum(greycoprops(glcm, 'energy'))
+            asm[i, 0] = np.sum(greycoprops(glcm, 'ASM'))
+            # change back to [0, 0] and angles = [0] if more values don't improve classification
             print("Processing GLCM for lesion #" + str(i))
             i += 1
 
@@ -155,7 +156,7 @@ if __name__ == "__main__":
     X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
     # csvector, num_positive = get_clinsig_vector(X, attr)
     # print(num_positive/len(X))
-    a, b, c = get_feature_extracts() #takes 13 minutes to run
+    a, b, c = get_feature_extracts() #takes 13 minutes to run but an hour if 4 angles for GCLM
     print("Feature Matrix")
     print(a)
     print("Clinical Significance Vector")
