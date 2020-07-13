@@ -19,13 +19,13 @@ import os
 
 """ This is done because it makes life easier to convert all to HDF5"""
 
-train_set = True  # Denotes whether we are joining the training or the test data
+train_set = False  # Denotes whether we are joining the training or the test data
 
 main_path = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data'
 
 """" Get all directories from the Ktrans dir and also the ones from DICOM, but only up to \ProstateX-aaaa """
-sub_dirs_src1 = [x[0] for x in os.walk(main_path + '\\PROSTATEX-DICOM\\train') if x[0].split(os.sep)[-1].split('-')[0] == 'ProstateX']
-sub_dirs_src2 = [x[0] for x in os.walk(main_path + '\\ProstateX-Ktrans-train') if x[0].split(os.sep)[-1].split('-')[0] == 'ProstateX']
+sub_dirs_src1 = [x[0] for x in os.walk(main_path + '\\DICOM-test') if x[0].split(os.sep)[-1].split('-')[0] == 'ProstateX']
+sub_dirs_src2 = [x[0] for x in os.walk(main_path + '\\ProstateXKtrans-test-fixedv2') if x[0].split(os.sep)[-1].split('-')[0] == 'ProstateX']
 
 # print len(sub_dirs_src1), len(sub_dirs_src2)
 
@@ -36,13 +36,12 @@ aux_lst1 = [x.split(os.sep)[-1] for x in sub_dirs_src1 if x.split(os.sep)[-1] no
 
 if aux_lst1:
     for case in aux_lst1:
-        doi_dir = main_path + '\\PROSTATEX-DICOM\\train\\' + case
-        ktrans_dir = main_path + '\\ProstateX-Ktrans-train\\' + case
+        doi_dir = main_path + '\\DICOM-test\\' + case
+        ktrans_dir = main_path + '\\ProstateXKtrans-test-fixedv2\\' + case
         os.makedirs(ktrans_dir)
         sub_dirs_src2.insert(sub_dirs_src1.index(doi_dir), ktrans_dir)
 
-print
-len(sub_dirs_src1), len(sub_dirs_src2)
+print(len(sub_dirs_src1), len(sub_dirs_src2))
 
 # for i in range(len(sub_dirs_src1)):
 #    print sub_dirs_src1[i].split(os.sep)[-1] == sub_dirs_src2[i].split(os.sep)[-1]

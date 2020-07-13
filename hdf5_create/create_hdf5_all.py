@@ -120,7 +120,7 @@ def train_csv_to_h5(csv_file, h5):
                 group.attrs.create('ClinSig', clin_sig, dtype='S10')
 
 
-train_set = True
+train_set = False
 
 if __name__ == "__main__":
     # Example usage
@@ -129,12 +129,15 @@ if __name__ == "__main__":
         main_folder = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data'
         data_folder = main_folder + '\\All_training_data'
         images_csv = 'ProstateX-Images-Train-ALL.csv'
+    else:
+        h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')
+        main_folder = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data'
+        data_folder = main_folder + '\\All_test_data'
+        images_csv = 'ProstateX-Images-Test-ALL.csv'
 
-    # else:
-    #     h5file = h5py.File('prostatex-test-ALL.hdf5', 'w')
-    #     main_folder = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test'
-    #     data_folder = main_folder + '\\All_test_data'
-    #     images_csv = main_folder + '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test-ALL.csv'
 
     dicom_to_h5(data_folder, h5file)
     train_csv_to_h5(images_csv, h5file)
+
+    # don't forget to close file to make it work
+    h5file.close()

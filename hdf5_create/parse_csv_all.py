@@ -13,7 +13,7 @@ import sys
 
     That's why it uses try: except:"""
 
-train_set = True
+train_set = False
 
 if train_set:
     main_path = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\All_training_data\\'
@@ -24,15 +24,13 @@ if train_set:
     # findings_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Training' \
     #                     '\\ProstateX-TrainingLesionInformationv2\\ProstateX-Findings-Train.csv'
 else:
-    main_path = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test\\All_test_data\\'
-    NEW_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test' \
-              '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test-NEW.csv'
-    ktrans_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test' \
-                 '\\ProstateX-TestLesionInformation\\ProstateX-Images-Ktrans-Test.csv'
-    images_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test' \
-                 '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test.csv'
-    findings_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test' \
-                   '\\ProstateX-TestLesionInformation\\ProstateX-Findings-Test.csv'
+    main_path = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\All_test_data\\'
+    NEW_csv = 'ProstateX-Images-Test-NEW.csv'
+    ktrans_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TestLesionInformation\\ProstateX-Images-Ktrans-Test.csv'
+    # images_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test' \
+    #              '\\ProstateX-TestLesionInformation\\ProstateX-Images-Test.csv'
+    # findings_csv = 'C:\\Users\\User\\Mis Documentos\\Mine\\Trabajo\\Uni\\RU\\2ndS-ISMI\\Project\\Data\\Test' \
+    #                '\\ProstateX-TestLesionInformation\\ProstateX-Findings-Test.csv'
 
 
 def join_rows(reader, ktrans_lst):

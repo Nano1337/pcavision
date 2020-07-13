@@ -5,16 +5,16 @@ import csv
 so all lesion information is inside ProstateX-Images-{Train,Test}-NEW.csv
 Only has to be run once, so hdf5 conversion later on needs to draw from just one .csv file"""
 
-train_set = True  # Denotes whether we're building new .csv for train or test files.
+train_set = False  # Denotes whether we're building new .csv for train or test files.
 
-# Paths for train set
-images_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TrainingLesionInformationv2\\ProstateX-Images-Train.csv'
-findings_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TrainingLesionInformationv2\\ProstateX-Findings-Train.csv'
+# # Paths for train set
+# images_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TrainingLesionInformationv2\\ProstateX-Images-Train.csv'
+# findings_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TrainingLesionInformationv2\\ProstateX-Findings-Train.csv'
 
 # Paths for test set
-# images_csv = ''
-#
-# findings_csv = ''
+images_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TestLesionInformation\\ProstateX-Images-Test.csv'
+
+findings_csv = 'C:\\Users\\haoli\\Downloads\\ProstateX_Data\\ProstateX-TestLesionInformation\\ProstateX-Findings-Test.csv'
 
 with open(images_csv, 'r') as images_train:
     with open(findings_csv, 'r') as findings_train:
