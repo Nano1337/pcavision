@@ -2,8 +2,8 @@ import math
 import numpy as np
 import h5py
 from lesion_extraction_2d.h5_query import get_lesion_info
-
-
+from medpy.filter import IntensityRangeStandardization
+import pickle
 class Centroid:
     def __init__(self, x, y, z):
         self.x = x
@@ -12,7 +12,6 @@ class Centroid:
 
     def __repr__(self):
         return '({}, {}, {})'.format(self.x, self.y, self.z)
-
 
 def extract_lesion_2d(img, centroid_position, size=None, realsize=9, imagetype='ADC'):
     if imagetype == 'T2TRA':
@@ -57,26 +56,34 @@ def get_train_data(h5_file, query_words, size_px=9):
         current_patient = infos[0]['name'].split('/')[1]
         if current_patient == previous_patient:
             print('Warning in {}: Found duplicate match for {}. Skipping...'
-                  .format(get_train_data.__name__, current_patient))
+                    .format(get_train_data.__name__, current_patient))
             continue
         for lesion in infos:
 
             centroid = parse_centroid(lesion['ijk'])
-            lesion_img = extract_lesion_2d(image, centroid, size=size_px)
+
+            if centroid.z < 0 or centroid.z >= len(image):
+                lesion_img = None
+            else:
+                #lesion_img = image[centroid.z] #get full mri
+                lesion_img = extract_lesion_2d(image, centroid, size=size_px) #to crop lesion from centroid
             if lesion_img is None:
+                lesion_img = X[0]
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
-                      .format(get_train_data.__name__, lesion))
-                continue
-
+                        .format(get_train_data.__name__, lesion))
             X.append(lesion_img)
-
             lesion_attributes.append(lesion)
 
             y.append(lesion['ClinSig'] == b"TRUE")
 
         previous_patient = current_patient
+    X = np.asarray(X)
+    if 't2_tse_tra' in query_words:
+        irs = IntensityRangeStandardization()
+        _, X = irs.train_transform(X)
+        X = [pixels.astype(int) + 1000 for pixels in X]
+    return X, np.asarray(y), np.asarray(lesion_attributes)
 
-    return np.asarray(X), np.asarray(y), np.asarray(lesion_attributes)
 
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
@@ -84,12 +91,18 @@ if __name__ == "__main__":
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
     X, y, attr = get_train_data(h5_file, ['ADC']) #gets all images of specified type
+    # irs = IntensityRangeStandardization()
+    # trained_model, transformed_images = irs.train_transform(X)
+    # with open('my_trained_model.pkl', 'wb') as f:
+    #     pickle.dump(irs, f)
+
     n = 0 #lesion number
     min = 6 #minimum intensity
     print(type(X[1]))
     print(y[n]) #Clinical Significance as True/False
     print(attr[n]) #dictionary of metadata
     # X[n][X[n] > min] = 10
+    # ax = plt.hist(X[n].ravel(), bins = 256)
     plt.imshow(X[n], cmap='gray')
     plt.show()
     print(X[n])

@@ -5,6 +5,8 @@ from sklearn.metrics import roc_curve, auc, precision_recall_curve, f1_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn import metrics, model_selection
 from sklearn.linear_model import LogisticRegression
+import sklearn
+from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 
@@ -13,7 +15,9 @@ def make_PRC(x, y):
 
     # make logistic regression model with l1 regularization
     cv = StratifiedKFold(n_splits=10)
-    classifier = LogisticRegression(penalty='l1', solver='liblinear')
+    #classifier = LogisticRegression(penalty='l1', solver='liblinear')
+    #classifier = sklearn.svm.SVC(C=0.00000000001, kernel='rbf', probability=True)
+    classifier = RandomForestClassifier(criterion='entropy')
     precisions = []
     aucs = []
     f1s = []
@@ -164,7 +168,7 @@ if __name__ == "__main__":
         feature_dict = pickle.loads(handle.read())
     print("Reading back feature dict")
     print(feature_dict)
-
+    feature_mat = np.nan_to_num(feature_mat)
     # show ROC curve
     make_ROC(feature_mat, clinsig_vect)
 

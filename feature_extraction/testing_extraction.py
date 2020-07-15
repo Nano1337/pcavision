@@ -8,6 +8,7 @@ from lesion_extraction_2d.lesion_extractor_2d import get_train_data
 from skimage.feature import greycomatrix, greycoprops
 import functools
 import pickle
+from scipy.stats import skew, kurtosis
 
 @functools.lru_cache(maxsize=None)
 def get_feature_extracts():
@@ -20,6 +21,7 @@ def get_feature_extracts():
 
     # extract info for matching MRI type name
     X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
+    X1, y1, attr1 = get_train_data(h5_file, ['t2_tse_tra'])
     # X is NumPy array with all lesions so X[n] is the 2d array for 1 lesion
     # y is clinical significance as True/False
     # attr is the dictionary of metadata associated with the region
@@ -30,7 +32,7 @@ def get_feature_extracts():
     clinsig_vector = get_clinsig_vector(X, attr)
 
     # with zone info
-    feature_matrix = get_zone(X)
+    feature_matrix = get_zone(X, attr)
     feature_dict = { 0 : "zone",
                      1 : "zone",
                      2 : "zone",
@@ -40,25 +42,55 @@ def get_feature_extracts():
                      6 : "ADC GLCM homogeneity",
                      7 : "ADC GLCM energy",
                      8 : "ADC GLCM angular second moment",
-                     9 : "ADC 10%",
-                     10: "ADC average"}
+                     9 : "ADC Tamura coarseness",
+                     10: "ADC Tamura contrast",
+                     11: "ADC Tamura roughness",
+                     12 : "ADC 10%",
+                     13: "ADC average",
+                     14: "ADC skewness",
+                     15: "ADC kurtosis",
+                     16: "T2WI GLCM dissimilarity",
+                     17: "T2WI GLCM correlation",
+                     18: "T2WI GLCM contrast",
+                     19: "T2WI GLCM homogeneity",
+                     20: "T2WI GLCM energy",
+                     21: "T2WI GLCM angular second moment",
+                     22: "T2WI Tamura coarseness",
+                     23: "T2WI Tamura contrast",
+                     24: "T2WI Tamura roughness",
+                     25: "T2WI 10%",
+                     26: "T2WI average",
+                     27: "T2WI skewness",
+                     28: "T2WI kurtosis"
+                     }
+    images = [X, X1]
+    i=0
+    while(i<len(images)):
+    # get ADC then T2WI feature vectors
+        X = images[i]
+        dissimilarity, correlation, contrast, homo, energy, asm = get_GLCM(X)
+        adc10vect, adcmeanvect, adcskewvect, adckurtvect = get_stats(X)
+        coarse, con, rough = get_tamura_features(X)
 
-    # get feature vectors
-    dissimilarity, correlation, contrast, homo, energy, asm = get_GLCM(X)
-    adc10vect, adcmeanvect = get_ADC_stats(X)
+        # concatenate ADC then T2WI feature vectors column-wise
+        feature_matrix = np.concatenate((feature_matrix, dissimilarity), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, correlation), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, contrast), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, homo), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, energy), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, asm), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, coarse), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, con), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, rough), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, adc10vect), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, adcmeanvect), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, adcskewvect), axis=1)
+        feature_matrix = np.concatenate((feature_matrix, adckurtvect), axis=1)
+        i += 1
 
-    # concatenate feature vectors column-wise
-    feature_matrix = np.concatenate((feature_matrix, dissimilarity), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, correlation), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, contrast), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, homo), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, energy), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, asm), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, adc10vect), axis=1)
-    feature_matrix = np.concatenate((feature_matrix, adcmeanvect), axis=1)
     return feature_matrix, clinsig_vector, feature_dict
 
-def get_zone(X):
+def get_zone(X, attr):
     # create intitial dataframe
     zone_types = ('AS', 'SV', 'PZ', 'TZ')
     zone_df = pd.DataFrame(zone_types, columns=['Zone_Types'])
@@ -80,6 +112,7 @@ def get_zone(X):
     print(zone_df)
     num = 0
     zvect = np.zeros((len(X), 3))
+    zones = []
     for patch in X:
         zone = attr[num]['Zone'].decode('UTF-8')
         row = zone_df.loc[zone_df['Zone_Types'] == zone]
@@ -94,8 +127,9 @@ def get_zone(X):
         zvect[num, 0] = int(row.iloc[:, -3].tolist()[-1])
         zvect[num, 1] = int(row.iloc[:, -2].tolist()[-1])
         zvect[num, 2] = int(row.iloc[:, -1].tolist()[-1])
+        zones.append(zone)
         num += 1
-    return zvect
+    return zvect, zones
 
 def get_GLCM(X):
     # initiate GLCM dissimilarity and correlation vectors
@@ -139,15 +173,77 @@ def get_clinsig_vector(X, attr):
             num += 1
     return csvector
 
-def get_ADC_stats(X):
+def get_stats(X):
     i = 0
     adc10vect = np.zeros((len(X), 1))
     adcmeanvect = np.zeros((len(X), 1))
+    adcskewvect = np.zeros((len(X), 1))
+    adckurtvect = np.zeros((len(X), 1))
     for patch in X:
         adc10vect[i, 0] = np.percentile(patch, 10)
         adcmeanvect[i, 0] = np.mean(patch)
+        adcskewvect[i, 0] = skew(patch.ravel())
+        adckurtvect[i, 0] = kurtosis(patch.ravel())
         i += 1
-    return adc10vect, adcmeanvect
+    return adc10vect, adcmeanvect, adcskewvect, adckurtvect
+
+def get_tamura_features(X):
+    coarseness = tamura_coarseness(X)
+    con = contrast(X)
+    roughness = coarseness + con
+    return coarseness, con, roughness
+
+def tamura_coarseness(X, kmax=5):
+    fcrss = np.zeros((len(X), 1))
+    for n in range(len(X)):
+        image = X[n]
+        w = image.shape[0]
+        h = image.shape[1]
+        kmax = kmax if (np.power(2, kmax) < w) else int(np.log(w) / np.log(2))
+        kmax = kmax if (np.power(2, kmax) < h) else int(np.log(h) / np.log(2))
+        average_gray = np.zeros([kmax, w, h])
+        horizon = np.zeros([kmax, w, h])
+        vertical = np.zeros([kmax, w, h])
+        Sbest = np.zeros([w, h])
+
+        for k in range(kmax):
+            window = np.power(2, k)
+            for wi in range(w)[window:(w - window)]:
+                for hi in range(h)[window:(h - window)]:
+                    average_gray[k][wi][hi] = np.sum(image[wi - window:wi + window, hi - window:hi + window])
+            for wi in range(w)[window:(w - window - 1)]:
+                for hi in range(h)[window:(h - window - 1)]:
+                    horizon[k][wi][hi] = average_gray[k][wi + window][hi] - average_gray[k][wi - window][hi]
+                    vertical[k][wi][hi] = average_gray[k][wi][hi + window] - average_gray[k][wi][hi - window]
+            horizon[k] = horizon[k] * (1.0 / np.power(2, 2 * (k + 1)))
+            vertical[k] = horizon[k] * (1.0 / np.power(2, 2 * (k + 1)))
+
+        for wi in range(w):
+            for hi in range(h):
+                h_max = np.max(horizon[:, wi, hi])
+                h_max_index = np.argmax(horizon[:, wi, hi])
+                v_max = np.max(vertical[:, wi, hi])
+                v_max_index = np.argmax(vertical[:, wi, hi])
+                index = h_max_index if (h_max > v_max) else v_max_index
+                Sbest[wi][hi] = np.power(2, index)
+
+        fcrs = np.mean(Sbest)
+        fcrss[n, 0] = fcrs
+
+    return fcrss
+
+def contrast(X):
+    fcons = np.zeros((len(X), 1))
+    for n in range(len(X)):
+        image = X[n]
+        image = np.reshape(image, (1, image.shape[0] * image.shape[1]))
+        m4 = np.mean(np.power(image - np.mean(image), 4))
+        v = np.var(image)
+        std = np.power(v, 0.5)
+        alfa4 = m4 / np.power(v, 2)
+        fcon = std / np.power(alfa4, 0.25)
+        fcons[n, 0] = fcon
+    return fcons
 
 if __name__ == "__main__":
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
@@ -156,19 +252,35 @@ if __name__ == "__main__":
     X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
     # csvector, num_positive = get_clinsig_vector(X, attr)
     # print(num_positive/len(X))
-    a, b, c = get_feature_extracts() #takes 13 minutes to run but an hour if 4 angles for GCLM
-    print("Feature Matrix")
-    print(a)
-    print("Clinical Significance Vector")
-    print(b)
-    print("Feature Dictionary")
-    print(c)
+    # a, b, c = get_feature_extracts() #takes 13 minutes to run but an hour if 4 angles for GCLM now it takes too damn long
+    # print("Feature Matrix")
+    # print(a)
+    # print("Clinical Significance Vector")
+    # print(b)
+    # print("Feature Dictionary")
+    # print(c)
+    #
+    # # write numpy array and dictionary to files so only have to run program once
+    # save('feature_mat.npy', a)
+    # save('clinsig_vect.npy', b)
+    # with open('feature_dict.txt', 'wb') as handle:
+    #     pickle.dump(c, handle)
 
-    # write numpy array and dictionary to files so only have to run program once
-    save('feature_mat.npy', a)
-    save('clinsig_vect.npy', b)
-    with open('feature_dict.txt', 'wb') as handle:
-        pickle.dump(c, handle)
+    _, zones = get_zone(X, attr)
+    AS, SV, PZ, TZ = 0, 0, 0, 0
+    for zone in zones:
+        if zone == 'AS':
+            AS += 1
+        if zone == 'SV':
+            SV += 1
+        if zone == 'PZ':
+            PZ += 1
+        if zone == 'TZ':
+            TZ += 1
+    print(AS, SV, PZ, TZ)
+
+
+
 
 
 
