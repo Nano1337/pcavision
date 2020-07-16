@@ -252,6 +252,7 @@ if __name__ == "__main__":
     X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
     # csvector, num_positive = get_clinsig_vector(X, attr)
     # print(num_positive/len(X))
+
     # a, b, c = get_feature_extracts() #takes 13 minutes to run but an hour if 4 angles for GCLM now it takes too damn long
     # print("Feature Matrix")
     # print(a)

@@ -49,36 +49,38 @@ def get_lesion_info(h5_file, query_words):
             lesion_info.append(lesion_dict)
 
         lesions_info.append([lesion_info, pixel_array])
-
+    print(type(lesions_info))
     return lesions_info
 
 
 if __name__ == '__main__':
     """Example usage"""
     # Some basic examples using list comprehension on our HDF5 set:
-
-    h5_file = h5py.File('C:\\Users\Jeftha\Downloads\prostatex-test.hdf5', 'r')
-
-    # Selecting all patients
-    patients = [h5_file[patient_id] for patient_id in h5_file.keys()]
-    print(len(patients))
-
-    # Selecting all DICOM series
-    # Note that this would take quite some time using our old approach
-    # Now it's almost instant
-    series = [h5_file[patient_id][dcm_series]
-              for patient_id in h5_file.keys()
-              for dcm_series in h5_file[patient_id].keys()]
-    print(len(series))
-
-    # Selecting all 'ADC' DICOM series
-    adc_series = [h5_file[patient_id][dcm_series]
-                  for patient_id in h5_file.keys()
-                  for dcm_series in h5_file[patient_id].keys()
-                  if '_ADC' in dcm_series]
-    print(len(adc_series))
-
-    lesions_info = get_lesion_info(h5_file, ['ADC'])
-    for lesion_info, pixel_array in lesions_info:
-        current_patient = lesion_info[0]['name'].split('/')[1]
-        print('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))
+    import pickle
+    h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
+    lesion_info = get_lesion_info(h5_file, ['t2_tse_tra'])
+    with open('t2_tse_tra_train.txt', 'wb') as fp:
+        pickle.dump(lesion_info, fp)
+    # # Selecting all patients
+    # patients = [h5_file[patient_id] for patient_id in h5_file.keys()]
+    # print(len(patients))
+    #
+    # # Selecting all DICOM series
+    # # Note that this would take quite some time using our old approach
+    # # Now it's almost instant
+    # series = [h5_file[patient_id][dcm_series]
+    #           for patient_id in h5_file.keys()
+    #           for dcm_series in h5_file[patient_id].keys()]
+    # print(len(series))
+    #
+    # # Selecting all 'ADC' DICOM series
+    # adc_series = [h5_file[patient_id][dcm_series]
+    #               for patient_id in h5_file.keys()
+    #               for dcm_series in h5_file[patient_id].keys()
+    #               if '_ADC' in dcm_series]
+    # print(len(adc_series))
+    #
+    # lesions_info = get_lesion_info(h5_file, ['ADC'])
+    # for lesion_info, pixel_array in lesions_info:
+    #     current_patient = lesion_info[0]['name'].split('/')[1]
+    #     print('{} with {} lesion(s): {}'.format(pixel_array.shape, len(lesion_info), lesion_info))

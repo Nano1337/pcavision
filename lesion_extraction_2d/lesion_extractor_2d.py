@@ -13,7 +13,7 @@ class Centroid:
     def __repr__(self):
         return '({}, {}, {})'.format(self.x, self.y, self.z)
 
-def extract_lesion_2d(img, centroid_position, size=None, realsize=9, imagetype='ADC'):
+def extract_lesion_2d(img, centroid_position, size=None, realsize=16, imagetype='ADC'):
     if imagetype == 'T2TRA':
         if size is None:
             sizecal = math.ceil(realsize * 2)
@@ -45,8 +45,11 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file, query_words, size_px=9):
-    lesion_info = get_lesion_info(h5_file, query_words)
+def get_train_data(h5_file, query_words, imagenum, size_px=16 ):
+    file = 'C:\\Users\\haoli\\Documents\\pcavision\\lesion_extraction_2d\\t2_tse_tra_train.txt'
+    with open(file, 'rb') as fp:
+        lesion_info = pickle.load(fp)
+    #lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
     y = []
@@ -65,8 +68,8 @@ def get_train_data(h5_file, query_words, size_px=9):
             if centroid.z < 0 or centroid.z >= len(image):
                 lesion_img = None
             else:
-                #lesion_img = image[centroid.z] #get full mri
-                lesion_img = extract_lesion_2d(image, centroid, size=size_px) #to crop lesion from centroid
+                lesion_img = image[imagenum] #get full mri
+                #lesion_img = extract_lesion_2d(image, centroid, size=size_px) #to crop lesion from centroid
             if lesion_img is None:
                 lesion_img = X[0]
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
@@ -84,25 +87,65 @@ def get_train_data(h5_file, query_words, size_px=9):
         X = [pixels.astype(int) + 1000 for pixels in X]
     return X, np.asarray(y), np.asarray(lesion_attributes)
 
-
 if __name__ == "__main__":
     from matplotlib import pyplot as plt
+    import matplotlib.patches as patches
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['ADC']) #gets all images of specified type
+    X, y, attr = get_train_data(h5_file, ['t2_tse_tra'], -10) #gets all images of specified type
     # irs = IntensityRangeStandardization()
     # trained_model, transformed_images = irs.train_transform(X)
     # with open('my_trained_model.pkl', 'wb') as f:
     #     pickle.dump(irs, f)
 
-    n = 0 #lesion number
-    min = 6 #minimum intensity
-    print(type(X[1]))
-    print(y[n]) #Clinical Significance as True/False
-    print(attr[n]) #dictionary of metadata
+    #n = 7#lesion number
+    # min = 6 #minimum intensity
+    # print(type(X[n]))
+    # print(y) #Clinical Significance as True/False
+    # print(attr[n]) #dictionary of metadata
     # X[n][X[n] > min] = 10
     # ax = plt.hist(X[n].ravel(), bins = 256)
-    plt.imshow(X[n], cmap='gray')
+    plt.imshow(X[9], cmap='gray') #[y, x]
+    # ax = plt.gca()
+    # rect = patches.Rectangle((50, 60), 6, 13, linewidth=1, edgecolor='cyan', fill=False)
+    # ax.add_patch(rect)
     plt.show()
-    print(X[n])
+    #print(np.shape(X[n]))
+
+    #include image number parameter in method
+    # ADC PZ X[0][58:72, 50:56] image[-11]
+    # ADC PZ X[4][73:80, 28:38] image[-8]
+    # ADC PZ X[7][70:78, 35:50] image[-7]
+    # ADC PZ X[8][70:78, 35:50] image[-7]
+    # ADC PZ X[11][70:76, 47:57] image[-11]
+    # ADC PZ X[16][69:75, 45:55] image[-10]
+    # ADC PZ X[17][69:76, 45:55] image[-10]
+    # ADC PZ X[21][72:80, 30:50] image[-10]
+    # ADC PZ X[36][70:80, 43:55] image[-10]
+    # ADC PZ X[51][66:73, 27:35] image[-8]
+    # ADC PZ X[57][60:75, 51:59] image[-9]
+    # ADC PZ X[58][57:75, 50:59] image[-9]
+    # ADC PZ X[59][57:75, 51:59] image[-9]
+    # ADC PZ X[76][67:80, 33:53] image[-12]
+    # ADC PZ X[84][63:74, 48:54] image[-10]
+    # ADC PZ X[92][60:72, 27:35] image[-10]
+
+    # T2WI PZ X[0][195:211, 220:245] image[-10]
+    # T2WI PZ X[6][237:252, 220:248] image[-8]
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+    # T2WI PZ
+
+
