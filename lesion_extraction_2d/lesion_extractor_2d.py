@@ -46,10 +46,10 @@ def parse_centroid(ijk):
 
 
 def get_train_data(h5_file, query_words, imagenum, size_px=16 ):
-    file = 'C:\\Users\\haoli\\Documents\\pcavision\\lesion_extraction_2d\\t2_tse_tra_train.txt'
-    with open(file, 'rb') as fp:
-        lesion_info = pickle.load(fp)
-    #lesion_info = get_lesion_info(h5_file, query_words)
+    # file = 'C:\\Users\\haoli\\Documents\\pcavision\\lesion_extraction_2d\\t2_tse_tra_train.txt'
+    # with open(file, 'rb') as fp:
+    #     lesion_info = pickle.load(fp)
+    lesion_info = get_lesion_info(h5_file, query_words)
 
     X = []
     y = []
@@ -81,10 +81,10 @@ def get_train_data(h5_file, query_words, imagenum, size_px=16 ):
 
         previous_patient = current_patient
     X = np.asarray(X)
-    if 't2_tse_tra' in query_words:
-        irs = IntensityRangeStandardization()
-        _, X = irs.train_transform(X)
-        X = [pixels.astype(int) + 1000 for pixels in X]
+    # if 't2_tse_tra' in query_words:
+    #     irs = IntensityRangeStandardization()
+    #     _, X = irs.train_transform(X)
+    #     X = [pixels.astype(int) + 1000 for pixels in X]
     return X, np.asarray(y), np.asarray(lesion_attributes)
 
 if __name__ == "__main__":
@@ -106,7 +106,7 @@ if __name__ == "__main__":
     # print(attr[n]) #dictionary of metadata
     # X[n][X[n] > min] = 10
     # ax = plt.hist(X[n].ravel(), bins = 256)
-    plt.imshow(X[9], cmap='gray') #[y, x]
+    plt.imshow(X[84][210:230, 150:180], cmap='gray') #[y, x]
     # ax = plt.gca()
     # rect = patches.Rectangle((50, 60), 6, 13, linewidth=1, edgecolor='cyan', fill=False)
     # ax.add_patch(rect)
@@ -133,19 +133,19 @@ if __name__ == "__main__":
 
     # T2WI PZ X[0][195:211, 220:245] image[-10]
     # T2WI PZ X[6][237:252, 220:248] image[-8]
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
-    # T2WI PZ
+    # T2WI PZ X[10][215:231, 160:180] image[-10]
+    # T2WI PZ X[11][225:241, 160:180] image[-10]
+    # T2WI PZ X[16][200:220, 220:240] image[-9]
+    # T2WI PZ X[17][200:230, 220:240] image[-9]
+    # T2WI PZ X[21][223:250, 193:230] image[-9]
+    # T2WI PZ X[22][218:235, 140:165] image[-10]
+    # T2WI PZ X[24][190:225, 150:166] image[-10]
+    # T2WI PZ X[36][220:250, 210:240] image[-10]
+    # T2WI PZ X[51][213:230, 145:180] image[-8]
+    # T2WI PZ X[57][170:212, 225:250] image[-9]
+    # T2WI PZ X[58][170:212, 225:250] image[-9]
+    # T2WI PZ X[59][170:212, 225:250] image[-9]
+    # T2WI PZ X[76][224:240, 160:230] image[-12]
+    # T2WI PZ X[84][210:230, 150:180] image[-10]
 
 
