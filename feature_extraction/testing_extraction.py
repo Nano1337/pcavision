@@ -267,19 +267,6 @@ if __name__ == "__main__":
     # with open('feature_dict.txt', 'wb') as handle:
     #     pickle.dump(c, handle)
 
-    _, zones = get_zone(X, attr)
-    AS, SV, PZ, TZ = 0, 0, 0, 0
-    for zone in zones:
-        if zone == 'AS':
-            AS += 1
-        if zone == 'SV':
-            SV += 1
-        if zone == 'PZ':
-            PZ += 1
-        if zone == 'TZ':
-            TZ += 1
-    print(AS, SV, PZ, TZ)
-
 
 
 
