@@ -93,7 +93,7 @@ if __name__ == "__main__":
     """ Example usage: """
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['t2_tse_tra'], -10) #gets all images of specified type
+    X, y, attr = get_train_data(h5_file, ['ADC'], -11) #gets all images of specified type
     # irs = IntensityRangeStandardization()
     # trained_model, transformed_images = irs.train_transform(X)
     # with open('my_trained_model.pkl', 'wb') as f:
@@ -103,17 +103,73 @@ if __name__ == "__main__":
     # min = 6 #minimum intensity
     # print(type(X[n]))
     # print(y) #Clinical Significance as True/False
-    # print(attr[n]) #dictionary of metadata
+
     # X[n][X[n] > min] = 10
     # ax = plt.hist(X[n].ravel(), bins = 256)
-    plt.imshow(X[84][210:230, 150:180], cmap='gray') #[y, x]
+    n = 181
+    plt.imshow(X[n][52:59, 30:50], cmap='gray') #[y, x]
+    print(attr[n]) #dictionary of metadata
     # ax = plt.gca()
     # rect = patches.Rectangle((50, 60), 6, 13, linewidth=1, edgecolor='cyan', fill=False)
     # ax.add_patch(rect)
     plt.show()
     #print(np.shape(X[n]))
 
-    #include image number parameter in method
+    # THIS WAS A PAIN TO MAKE
+    # ADC TZ X[0][60:75, 35:50] image[-10]
+    # ADC TZ X[2][60:68, 34:46] image[-10]
+    # ADC TZ X[15][62:75, 33:50] image[-10]
+    # ADC TZ X[18][55:75, 30:50] image[-10]
+    # ADC TZ X[25][55:70, 30:45] image[-10]
+    # ADC TZ X[37][55:70, 35:50] image[-10]
+    # ADC TZ X[39][60:70, 30:45] image[-10]
+    # ADC TZ X[41][57:70, 35:50] image[-10]
+    # ADC TZ X[50][56:75, 31:50] image[-10]
+    # ADC TZ X[55][60:70, 35:50] image[-10]
+    # ADC TZ X[58][58:65, 38:48] image[-10]
+    # ADC TZ X[68][52:65, 33:50] image[-10]
+    # ADC TZ X[70][51:73, 30:55] image[-10]
+    # ADC TZ X[80][56:80, 30:55] image[-10]
+    # ADC TZ X[83][55:70, 30:50] image[-10]
+
+    # ADC AS X[2][50:60, 32:45] image[-10]
+    # ADC AS X[21][50:56, 35:48] image[-10]
+    # ADC AS X[49][50:56, 37:46] image[-10]
+    # ADC AS X[82][42:50, 25:50] image[-10]
+    # ADC AS X[112][55:62, 32:45] image[-9]
+    # ADC AS X[137][48:56, 40:52] image[-11]
+    # ADC AS X[139][52:60, 34:48] image[-8]
+    # ADC AS X[164][50:60, 30:50] image[-11]
+    # ADC AS X[174][55:65, 28:50] image[-11]
+    # ADC AS X[181][52:59, 30:50] image[-11]
+
+    # T2WI TZ X[0][180:205, 175:210] image[-10]
+    # T2WI TZ X[9][160:200, 150:230] image[-10]
+    # T2WI TZ X[12][150:200, 145:200] image[-10]
+    # T2WI TZ X[13][160:200, 145:200] image[-10]
+    # T2WI TZ X[14][167:183, 170:210] image[-10]
+    # T2WI TZ X[21][165:220, 150:220] image[-10]
+    # T2WI TZ X[23][150:210, 150:250] image[-10]
+    # T2WI TZ X[25][145:220, 150:230] image[-10]
+    # T2WI TZ X[45][170:210, 150:220] image[-10]
+    # T2WI TZ X[53][170:220, 165:230] image[-10]
+    # T2WI TZ X[55][165:210, 170:230] image[-10]
+    # T2WI TZ X[63][140:180, 160:220] image[-10]
+    # T2WI TZ X[68][150:200, 160:230] image[-10]
+    # T2WI TZ X[81][160:230, 150:220] image[-10]
+    # T2WI TZ X[83][160:230, 150:240] image[-10]
+
+    # T2WI AS X[0][150:180, 165:200] image[-10]
+    # T2WI AS X[2][145:165, 170:200] image [-10]
+    # T2WI AS X[3][150:170, 167:210] image[-10]
+    # T2WI AS X[22][160:176, 160:200] image[-10]
+    # T2WI AS X[29][150:166, 165:200] image[-10]
+    # T2WI AS X[30][150:168, 170:210] image[-10]
+    # T2WI AS X[49][135:151, 180:215] image[-10]
+    # T2WI AS X[54][148:170, 170:220] image[-10]
+    # T2WI AS X[73][140:160, 170:220] image[-10]
+    # T2WI AS X[79][155:170, 165:210] image[-10]
+
     # ADC PZ X[0][58:72, 50:56] image[-11]
     # ADC PZ X[4][73:80, 28:38] image[-8]
     # ADC PZ X[7][70:78, 35:50] image[-7]
@@ -147,5 +203,7 @@ if __name__ == "__main__":
     # T2WI PZ X[59][170:212, 225:250] image[-9]
     # T2WI PZ X[76][224:240, 160:230] image[-12]
     # T2WI PZ X[84][210:230, 150:180] image[-10]
+
+
 
 
