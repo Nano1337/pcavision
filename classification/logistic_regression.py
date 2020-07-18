@@ -15,9 +15,9 @@ def make_PRC(x, y):
 
     # make logistic regression model with l1 regularization
     cv = StratifiedKFold(n_splits=10)
-    #classifier = LogisticRegression(penalty='l1', solver='liblinear')
+    classifier = LogisticRegression(penalty='l1', solver='liblinear')
     #classifier = sklearn.svm.SVC(C=0.00000000001, kernel='rbf', probability=True)
-    classifier = RandomForestClassifier(criterion='entropy')
+    #classifier = RandomForestClassifier(criterion='entropy')
     precisions = []
     aucs = []
     f1s = []
@@ -155,11 +155,11 @@ def make_ROC(x, y):
 if __name__ == "__main__":
 
     #load feature matrix, clinical significance vector, and feature dictionary from files
-    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\feature_mat.npy'
+    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\feature_mat_pz.npy'
     feature_mat = load(file1)
     print("Reading back feature matrix")
     print(feature_mat)
-    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\clinsig_vect.npy'
+    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\clinsig_vect_pz.npy'
     clinsig_vect = load(file2)
     print("Reading back clinical significance vector")
     print(clinsig_vect)

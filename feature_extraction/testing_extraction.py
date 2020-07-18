@@ -10,59 +10,57 @@ import functools
 import pickle
 from scipy.stats import skew, kurtosis
 
-@functools.lru_cache(maxsize=None)
 def get_feature_extracts():
     """
     Returns lesion n x features d matrix, binary label vector, and {column # : feature name} dictionary
     """
     # Note: change pixel size in 2 places in lesion_extractor_2d for different bounding box size (currently 9x9)
     # load hdf5 file
-    h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
-
-    # extract info for matching MRI type name
-    X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
-    X1, y1, attr1 = get_train_data(h5_file, ['t2_tse_tra'])
-    # X is NumPy array with all lesions so X[n] is the 2d array for 1 lesion
-    # y is clinical significance as True/False
-    # attr is the dictionary of metadata associated with the region
-    print("lesion extraction complete")
-    print("starting feature extraction")
+    # h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
+    #
+    # # extract info for matching MRI type name
+    # X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
+    # X1, y1, attr1 = get_train_data(h5_file, ['t2_tse_tra'])
+    # # X is NumPy array with all lesions so X[n] is the 2d array for 1 lesion
+    # # y is clinical significance as True/False
+    # # attr is the dictionary of metadata associated with the region
+    # print("lesion extraction complete")
+    # print("starting feature extraction")
 
     # Initiate Clinical Significance truth vector
-    clinsig_vector = get_clinsig_vector(X, attr)
+    clinsig_vector = np.load('clinsig_vect_pz.npy')
 
     # with zone info
-    feature_matrix = get_zone(X, attr)
-    feature_dict = { 0 : "zone",
-                     1 : "zone",
-                     2 : "zone",
-                     3 : "ADC GLCM dissimilarity",
-                     4 : "ADC GLCM correlation",
-                     5 : "ADC GLCM contrast",
-                     6 : "ADC GLCM homogeneity",
-                     7 : "ADC GLCM energy",
-                     8 : "ADC GLCM angular second moment",
-                     9 : "ADC Tamura coarseness",
-                     10: "ADC Tamura contrast",
-                     11: "ADC Tamura roughness",
-                     12 : "ADC 10%",
-                     13: "ADC average",
-                     14: "ADC skewness",
-                     15: "ADC kurtosis",
-                     16: "T2WI GLCM dissimilarity",
-                     17: "T2WI GLCM correlation",
-                     18: "T2WI GLCM contrast",
-                     19: "T2WI GLCM homogeneity",
-                     20: "T2WI GLCM energy",
-                     21: "T2WI GLCM angular second moment",
-                     22: "T2WI Tamura coarseness",
-                     23: "T2WI Tamura contrast",
-                     24: "T2WI Tamura roughness",
-                     25: "T2WI 10%",
-                     26: "T2WI average",
-                     27: "T2WI skewness",
-                     28: "T2WI kurtosis"
+    feature_matrix = np.empty((735, 26), int)
+    feature_dict = { 0 : "ADC GLCM dissimilarity",
+                     1 : "ADC GLCM correlation",
+                     2 : "ADC GLCM contrast",
+                     3 : "ADC GLCM homogeneity",
+                     4 : "ADC GLCM energy",
+                     5 : "ADC GLCM angular second moment",
+                     6 : "ADC Tamura coarseness",
+                     7: "ADC Tamura contrast",
+                     8: "ADC Tamura roughness",
+                     9 : "ADC 10%",
+                     10: "ADC average",
+                     11: "ADC skewness",
+                     12: "ADC kurtosis",
+                     13: "T2WI GLCM dissimilarity",
+                     14: "T2WI GLCM correlation",
+                     15: "T2WI GLCM contrast",
+                     16: "T2WI GLCM homogeneity",
+                     17: "T2WI GLCM energy",
+                     18: "T2WI GLCM angular second moment",
+                     19: "T2WI Tamura coarseness",
+                     20: "T2WI Tamura contrast",
+                     21: "T2WI Tamura roughness",
+                     22: "T2WI 10%",
+                     23: "T2WI average",
+                     24: "T2WI skewness",
+                     25: "T2WI kurtosis"
                      }
+    X = np.load('adcpz.npy')
+    X1 = np.load('t2pz.npy')
     images = [X, X1]
     i=0
     while(i<len(images)):
@@ -133,6 +131,7 @@ def get_zone(X, attr):
 
 def get_GLCM(X):
     # initiate GLCM dissimilarity and correlation vectors
+    X = X.astype(int)
     dissimilarity = np.zeros((len(X), 1))
     correlation = np.zeros((len(X), 1))
     contrast = np.zeros((len(X), 1))
@@ -146,13 +145,13 @@ def get_GLCM(X):
             i += 1
             continue
         else:
-            glcm = greycomatrix(patch, distances=[1], angles=[0, np.pi/4, np.pi/2, 3*np.pi/4], levels=3350, symmetric=True, normed=True)
-            dissimilarity[i, 0] = np.sum(greycoprops(glcm, 'dissimilarity'))
-            correlation[i, 0] = np.sum(greycoprops(glcm, 'correlation'))
-            contrast[i, 0] = np.sum(greycoprops(glcm, 'contrast'))
-            homo[i, 0] = np.sum(greycoprops(glcm, 'homogeneity'))
-            energy[i, 0] = np.sum(greycoprops(glcm, 'energy'))
-            asm[i, 0] = np.sum(greycoprops(glcm, 'ASM'))
+            glcm = greycomatrix(patch, distances=[1], angles=[0], levels=3350, symmetric=True, normed=True)
+            dissimilarity[i, 0] = greycoprops(glcm, 'dissimilarity')[0, 0]
+            correlation[i, 0] = greycoprops(glcm, 'correlation')[0, 0]
+            contrast[i, 0] = greycoprops(glcm, 'contrast')[0, 0]
+            homo[i, 0] = greycoprops(glcm, 'homogeneity')[0, 0]
+            energy[i, 0] = greycoprops(glcm, 'energy')[0, 0]
+            asm[i, 0] = greycoprops(glcm, 'ASM')[0, 0]
             # change back to [0, 0] and angles = [0] if more values don't improve classification
             print("Processing GLCM for lesion #" + str(i))
             i += 1
@@ -249,21 +248,21 @@ if __name__ == "__main__":
     h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
 
     # extract info for matching MRI type name
-    X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
+    #X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
     # csvector, num_positive = get_clinsig_vector(X, attr)
     # print(num_positive/len(X))
 
-    # a, b, c = get_feature_extracts() #takes 13 minutes to run but an hour if 4 angles for GCLM now it takes too damn long
-    # print("Feature Matrix")
-    # print(a)
-    # print("Clinical Significance Vector")
-    # print(b)
-    # print("Feature Dictionary")
-    # print(c)
-    #
-    # # write numpy array and dictionary to files so only have to run program once
-    # save('feature_mat.npy', a)
-    # save('clinsig_vect.npy', b)
+    a, b, c = get_feature_extracts() #takes 13 minutes to run but an hour if 4 angles for GCLM now it takes too damn long
+    print("Feature Matrix")
+    print(a)
+    print("Clinical Significance Vector")
+    print(b)
+    print("Feature Dictionary")
+    print(c)
+
+    # write numpy array and dictionary to files so only have to run program once
+    # save('feature_mat_pz.npy', a)
+    # save('clinsig_vect_pz.npy', b)
     # with open('feature_dict.txt', 'wb') as handle:
     #     pickle.dump(c, handle)
 
