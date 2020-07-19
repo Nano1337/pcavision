@@ -24,22 +24,24 @@ def linearize_pz():
 
 if __name__ == "__main__":
     # unrandomized positive on top and negative on bottom
-    post2pz = np.load('post2pz.npy')
-    posadcpz = np.load('posadcpz.npy')
+    post2pz = np.load('C:\\Users\\haoli\\Documents\\pcavision\\lesion_extraction_2d\\test_pz_t2.npy')
+    posadcpz = np.load('C:\\Users\\haoli\\Documents\\pcavision\\lesion_extraction_2d\\test_pz_adc.npy')
 
     # make unrandomized clinsig vect
-    clinsig_vect = np.vstack((np.ones((175, 1)), np.zeros((560, 1))))
+    clinsig_vect = np.vstack((np.ones((113, 1)), np.zeros((560, 1))))
 
     # linearize negative pixel arrays
     negadcpz, negt2pz = linearize_pz()
 
-    # combine t2wi and adc, respectively
     adcpz = np.vstack((posadcpz, negadcpz))
+    # combine t2wi and adc, respectively
     t2pz = np.vstack((post2pz, negt2pz))
 
     # shuffle rows respectively
     adcpz, t2pz, clinsig_vect = shuffle(adcpz, t2pz, clinsig_vect)
 
-    # np.save('adcpz.npy', adcpz)
-    # np.save('t2pz.npy', t2pz)
-    # np.save('clinsig_vect_pz.npy', clinsig_vect)
+    np.save('testalladcpz.npy', adcpz)
+    np.save('testallt2pz.npy', t2pz)
+    np.save('testallclinsig_vect.npy', clinsig_vect)
+
+    print('finished')

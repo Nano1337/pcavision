@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 from numpy import load, interp
-from sklearn.metrics import roc_curve, auc, precision_recall_curve, f1_score
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, f1_score, roc_auc_score
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn import metrics, model_selection
 from sklearn.linear_model import LogisticRegression
@@ -10,7 +10,41 @@ from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
 
-def make_PRC(x, y):
+def make_test_PRC(X_train, y_train, X_test, y_test):
+    # fit a model
+    model = LogisticRegression(penalty='l1', solver='liblinear')
+    model.fit(X_train, y_train)
+
+    # predict probabilities
+    lr_probs = model.predict_proba(X_test)
+
+    # keep probabilities for positive outcome only
+    lr_probs = lr_probs[:, 1]
+
+    # predict class values
+    yhat = model.predict(X_test)
+    lr_precision, lr_recall, _ = precision_recall_curve(y_test, lr_probs)
+    lr_f1, lr_auc = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
+
+    # calculate and plot mean PRC line
+    plt.plot(lr_recall, lr_precision, color='b',
+             label=r'Mean PRC (AUC = %0.2f) (F1 = %0.2f)' % (lr_auc, lr_f1),
+             lw=2, alpha=.8)
+
+    # plot chances line
+    no_skill = len(y_test[y_test == 1]) / len(y_test)
+    plt.plot([0, 1], [no_skill, no_skill], linestyle='--', lw=2, color='r',
+             label='Chance', alpha=.8)
+
+    # label graph and show
+    plt.xlim([-0.01, 1.01])
+    plt.ylim([-0.01, 1.01])
+    plt.xlabel('Recall Rate', fontsize=18)
+    plt.ylabel('Precision Rate', fontsize=18)
+    plt.title('Cross-Validation PRC of Logistic Regression', fontsize=18)
+    plt.legend(loc="lower left", prop={'size': 15})
+    plt.show()
+def make_train_PRC(x, y):
     feature_mat, clinsig_vect = x, y
 
     # make logistic regression model with l1 regularization
@@ -87,10 +121,44 @@ def make_PRC(x, y):
     plt.xlabel('Recall Rate', fontsize=18)
     plt.ylabel('Precision Rate', fontsize=18)
     plt.title('Cross-Validation PRC of Logistic Regression', fontsize=18)
-    plt.legend(loc="upper right", prop={'size': 15})
+    plt.legend(loc="lower left", prop={'size': 15})
     plt.show()
 
-def make_ROC(x, y):
+def make_test_ROC(X_train, y_train, X_test, y_test):
+
+    X_train, y_train = shuffle(X_train, y_train)
+    X_test, y_test = shuffle(X_test, y_test)
+
+    # fit a model
+    model = LogisticRegression(penalty='l1', solver='liblinear')
+    model.fit(X_train, y_train)
+
+    # predict probabilities
+    lr_probs = model.predict_proba(X_test)
+
+    # keep probabilities for positive outcome only
+    lr_probs = lr_probs[:, 1]
+    lr_auc = roc_auc_score(y_test, lr_probs)
+
+    # calculate roc curves
+    lr_fpr, lr_tpr, _ = roc_curve(y_test, lr_probs)
+
+    # plot roc curve for model
+    plt.plot(lr_fpr, lr_tpr, color='b',
+             label=r'Mean ROC (AUC = %0.2f)' % lr_auc,
+             lw=2, alpha=.8)
+    plt.plot([0, 1], [0, 1], linestyle='--', lw=2, color='r',
+             label='Chance', alpha=.8)
+    plt.xlim([-0.01, 1.01])
+    plt.ylim([-0.01, 1.01])
+    plt.xlabel('False Positive Rate', fontsize=18)
+    plt.ylabel('True Positive Rate', fontsize=18)
+    plt.title('Cross-Validation ROC of Logistic Regression', fontsize=18)
+    plt.legend(loc="lower right", prop={'size': 15})
+    plt.show()
+
+    print(model.coef_, model.intercept_)
+def make_train_ROC(x, y):
     feature_mat, clinsig_vect = x, y
 
     # make logistic regression model with l1 regularization
@@ -155,23 +223,34 @@ def make_ROC(x, y):
 if __name__ == "__main__":
 
     #load feature matrix, clinical significance vector, and feature dictionary from files
-    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\feature_mat_pz.npy'
+    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_feature_mat_pz.npy'
     feature_mat = load(file1)
     print("Reading back feature matrix")
     print(feature_mat)
-    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\clinsig_vect_pz.npy'
+    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\testallclinsig_vect_pz.npy'
     clinsig_vect = load(file2)
     print("Reading back clinical significance vector")
     print(clinsig_vect)
-    file3 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\feature_dict.txt'
+    file3 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\testallfeature_dict.txt'
     with open(file3, 'rb') as handle:
         feature_dict = pickle.loads(handle.read())
     print("Reading back feature dict")
+    file4 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_feature_mat_pz.npy'
+    test_feature_mat = load(file4)
+    print("Reading back testing feature matrix")
+    file5 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\testallclinsig_vect_pz.npy'
+    test_clinsig_vect = load(file5)
     print(feature_dict)
     feature_mat = np.nan_to_num(feature_mat)
-    # show ROC curve
-    make_ROC(feature_mat, clinsig_vect)
+    test_feature_mat = np.nan_to_num(test_feature_mat)
+    # show ROC curve for training cross validation
+    # make_train_ROC(feature_mat, clinsig_vect)
 
-    # make PRC curve
-    make_PRC(feature_mat, clinsig_vect)
+    # make PRC curve for training cross validation
+    # make_train_PRC(feature_mat, clinsig_vect)
 
+    # make ROC curve for test
+    make_test_ROC(feature_mat, clinsig_vect, test_feature_mat, test_clinsig_vect)
+
+    # make PRC curve for test
+    make_test_PRC(feature_mat, clinsig_vect, test_feature_mat, test_clinsig_vect)

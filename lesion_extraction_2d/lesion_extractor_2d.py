@@ -45,7 +45,7 @@ def parse_centroid(ijk):
     return Centroid(int(coordinates[0]), int(coordinates[1]), int(coordinates[2]))
 
 
-def get_train_data(h5_file, query_words, size_px=16 ):
+def get_train_data(h5_file, query_words, imagenum, size_px=16):
     # file = 'C:\\Users\\haoli\\Documents\\pcavision\\lesion_extraction_2d\\t2_tse_tra_train.txt'
     # with open(file, 'rb') as fp:
     #     lesion_info = pickle.load(fp)
@@ -68,8 +68,8 @@ def get_train_data(h5_file, query_words, size_px=16 ):
             if centroid.z < 0 or centroid.z >= len(image):
                 lesion_img = None
             else:
-                #lesion_img = image[imagenum] #get full mri
-                lesion_img = extract_lesion_2d(image, centroid, size=size_px) #to crop lesion from centroid
+                lesion_img = image[imagenum] #get full mri
+                #lesion_img = extract_lesion_2d(image, centroid, size=size_px) #to crop lesion from centroid
             if lesion_img is None:
                 lesion_img = X[0]
                 print('Warning in {}: ijk out of bounds for {}. No lesion extracted'
@@ -91,9 +91,117 @@ if __name__ == "__main__":
     from matplotlib import pyplot as plt
     import matplotlib.patches as patches
     """ Example usage: """
-    h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-train-ALL.hdf5', 'r')
+    h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-test-ALL.hdf5', 'r')
 
-    X, y, attr = get_train_data(h5_file, ['ADC'], -11) #gets all images of specified type
+    X, y, attr = get_train_data(h5_file, ['t2_tse_tra'], -10) #gets all images of specified type
+    n = 148
+    plt.imshow(X[n][225:241, 150:180], cmap='gray')  # [y, x]
+    print(attr[n])  # dictionary of m tadata
+    plt.show()
+
+    # T2WI PZ X[10][200:230, 130:160] image[-10]
+    # T2WI PZ X[27][184:200, 125:150] image[-10]
+    # T2WI PZ X[30][220:240, 210:233] image[-10]
+    # T2WI PZ X[32][140:170, 185:202] image[-10]
+    # T2WI PZ X[38][160:176, 125:150] image[-10]
+    # T2WI PZ X[45][158:180, 192:208] image[-10]
+    # T2WI PZ X[57][155:180, 190:205] image[-10]
+    # T2WI PZ X[65][140:200, 200:218] image[-10]
+    # T2WI PZ X[74][175:200, 195:210] image[-10]
+    # T2WI PZ X[101][170:200, 187:203] image[-10]
+    # T2WI PZ X[102][200:220, 150:170] image[-10]
+    # T2WI PZ X[128][227:243, 195:230] image[-10]
+    # T2WI PZ X[128][227:243, 160:195] image[-10]
+    # T2WI PZ X[131][234:250, 130:165] image[-10]
+    # T2WI PZ X[137][220:236, 215:235] image[-10]
+    # T2WI PZ X[138][185:205, 230:250] image[-10]
+    # T2WI PZ X[140][225:241, 150:180] image[-10]
+
+    # T2WI TZ X[12][175:200, 170:210] image[-9]
+    # T2WI TZ X[13][170:200, 170:210] image[-9]
+    # T2WI TZ X[17][180:240, 160:200] image[-7]
+    # T2WI TZ X[25][110:150, 120:180] image[-10]
+    # T2WI TZ X[27][150:180, 130:180] image[-10]
+    # T2WI TZ X[29][180:210, 150:210] image[-10]
+    # T2WI TZ X[32][145:165, 140:180] image[-10]
+    # T2WI TZ X[55][100:150, 158:177] image[-10]
+    # T2WI TZ X[59][200:240, 170:220] image[-10]
+    # T2WI TZ X[60][140:160, 140:180] image[-10]
+    # T2WI TZ X[83][160:185, 172:200] image[-10]
+    # T2WI TZ X[102][170:200, 160:210] image[-10]
+
+    # T2WI AS X[12][140:170, 170:210] image[-10]
+    # T2WI AS X[12][155:170, 170:210] image[-9]
+    # T2WI AS X[29][160:176, 160:200] image[-10]
+    # T2WI AS X[30][155:170, 175:200] image[-10]
+    # T2WI AS X[57][134:150, 150:174] image[-10]
+    # T2WI AS X[62][114:130, 145:175] image[-10]
+    # T2WI AS X[72][96:112, 140:170] image[-10]
+
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    # ADC PZ
+    
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    # ADC TZ
+    
+    # ADC AS
+    # ADC AS
+    # ADC AS
+    # ADC AS
+    # ADC AS
+    # ADC AS
+    # ADC AS
+
+
+    # PZ, TZ, AS = 0, 0, 0
+    # for zone in attr:
+    #     if zone['Zone'].decode('UTF-8') == 'PZ':
+    #         PZ += 1
+    #     if zone['Zone'].decode('UTF-8') == 'TZ':
+    #         TZ += 1
+    #     if zone['Zone'].decode('UTF-8') == 'AS':
+    #         AS += 1
+    #
+    # print(PZ, TZ, AS)
+
+    # #compile zone pixel arrays from test
+    # i = 0
+    # test_pz_adc = np.zeros((113, 6, 6))
+    # patchnum = 0
+    # for patch in X:
+    #     if attr[i]['Zone'].decode('UTF-8') == 'PZ':
+    #         test_pz_adc[patchnum] = patch
+    #         patchnum += 1
+    #     i += 1
+    #
+    # np.save('test_pz_adc.npy', test_pz_adc)
+    # print(test_pz_adc)
+
     # irs = IntensityRangeStandardization()
     # trained_model, transformed_images = irs.train_transform(X)
     # with open('my_trained_model.pkl', 'wb') as f:
@@ -106,10 +214,9 @@ if __name__ == "__main__":
 
     # X[n][X[n] > min] = 10
     # ax = plt.hist(X[n].ravel(), bins = 256)
-    n = 181
-    plt.imshow(X[n], cmap='gray') #[y, x]
-    print(attr[n]) #dictionary of metadata
-    plt.show()
+
+
+
     # ax = plt.gca()
     # rect = patches.Rectangle((50, 60), 6, 13, linewidth=1, edgecolor='cyan', fill=False)
     # ax.add_patch(rect)
