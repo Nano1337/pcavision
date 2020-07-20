@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
 from numpy import load, interp
-from sklearn.metrics import roc_curve, auc, precision_recall_curve, f1_score, roc_auc_score
+from sklearn.metrics import roc_curve, auc, precision_recall_curve, f1_score, roc_auc_score, classification_report
 from sklearn.model_selection import train_test_split, StratifiedKFold
 from sklearn import metrics, model_selection
 from sklearn.linear_model import LogisticRegression
@@ -13,6 +13,8 @@ from sklearn.utils import shuffle
 def make_test_PRC(X_train, y_train, X_test, y_test):
     # fit a model
     model = LogisticRegression(penalty='l1', solver='liblinear')
+    # model = sklearn.svm.SVC(C=0.05, kernel='rbf', probability=True)
+    # model = RandomForestClassifier(criterion='entropy', n_estimators=1000)
     model.fit(X_train, y_train)
 
     # predict probabilities
@@ -41,9 +43,10 @@ def make_test_PRC(X_train, y_train, X_test, y_test):
     plt.ylim([-0.01, 1.01])
     plt.xlabel('Recall Rate', fontsize=18)
     plt.ylabel('Precision Rate', fontsize=18)
-    plt.title('Cross-Validation PRC of Logistic Regression', fontsize=18)
+    plt.title('Test Set PRC of Logistic Regression', fontsize=18)
     plt.legend(loc="lower left", prop={'size': 15})
     plt.show()
+    print(classification_report(y_test, yhat))
 def make_train_PRC(x, y):
     feature_mat, clinsig_vect = x, y
 
@@ -131,6 +134,8 @@ def make_test_ROC(X_train, y_train, X_test, y_test):
 
     # fit a model
     model = LogisticRegression(penalty='l1', solver='liblinear')
+    # model = sklearn.svm.SVC(C=0.05, kernel='rbf', probability=True)
+    # model = RandomForestClassifier(criterion='entropy', n_estimators=1000)
     model.fit(X_train, y_train)
 
     # predict probabilities
@@ -153,7 +158,7 @@ def make_test_ROC(X_train, y_train, X_test, y_test):
     plt.ylim([-0.01, 1.01])
     plt.xlabel('False Positive Rate', fontsize=18)
     plt.ylabel('True Positive Rate', fontsize=18)
-    plt.title('Cross-Validation ROC of Logistic Regression', fontsize=18)
+    plt.title('Test Set ROC of Logistic Regression', fontsize=18)
     plt.legend(loc="lower right", prop={'size': 15})
     plt.show()
 
@@ -223,24 +228,31 @@ def make_train_ROC(x, y):
 if __name__ == "__main__":
 
     #load feature matrix, clinical significance vector, and feature dictionary from files
-    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_feature_mat_pz.npy'
+    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\train_feature_mat_as.npy'
     feature_mat = load(file1)
     print("Reading back feature matrix")
-    print(feature_mat)
-    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\testallclinsig_vect_pz.npy'
+    print(np.shape(feature_mat))
+
+
+    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\train_clinsig_vect_as.npy'
     clinsig_vect = load(file2)
     print("Reading back clinical significance vector")
-    print(clinsig_vect)
-    file3 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\testallfeature_dict.txt'
-    with open(file3, 'rb') as handle:
-        feature_dict = pickle.loads(handle.read())
-    print("Reading back feature dict")
-    file4 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_feature_mat_pz.npy'
+    print(np.shape(clinsig_vect))
+
+    # file3 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\PZ\\allfeature_dict.txt'
+    # with open(file3, 'rb') as handle:
+    #     feature_dict = pickle.loads(handle.read())
+    # print("Reading back feature dict")
+
+    file4 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_feature_mat_as.npy'
+    # \\test_feature_mat_pz.npy
     test_feature_mat = load(file4)
     print("Reading back testing feature matrix")
-    file5 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\testallclinsig_vect_pz.npy'
+
+    file5 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_clinsig_vect_as.npy'
     test_clinsig_vect = load(file5)
-    print(feature_dict)
+    print()
+
     feature_mat = np.nan_to_num(feature_mat)
     test_feature_mat = np.nan_to_num(test_feature_mat)
     # show ROC curve for training cross validation

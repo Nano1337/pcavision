@@ -10,6 +10,8 @@ import functools
 import pickle
 from scipy.stats import skew, kurtosis
 
+# 4 places to edit per run
+
 def get_feature_extracts():
     """
     Returns lesion n x features d matrix, binary label vector, and {column # : feature name} dictionary
@@ -28,10 +30,10 @@ def get_feature_extracts():
     # print("starting feature extraction")
 
     # Initiate Clinical Significance truth vector
-    clinsig_vector = np.load('testallclinsig_vect.npy')
+    clinsig_vector = np.load('test_clinsig_vect_as.npy')
 
     # with zone info
-    feature_matrix = np.empty((673, 26), int)
+    feature_matrix = np.empty((132, 26), int)
     feature_dict = { 0 : "ADC GLCM dissimilarity",
                      1 : "ADC GLCM correlation",
                      2 : "ADC GLCM contrast",
@@ -59,8 +61,8 @@ def get_feature_extracts():
                      24: "T2WI skewness",
                      25: "T2WI kurtosis"
                      }
-    X = np.load('testalladcpz.npy')
-    X1 = np.load('testallt2pz.npy')
+    X = np.load('test_adc_as.npy')
+    X1 = np.load('test_t2_as.npy')
     images = [X, X1]
     i=0
     while(i<len(images)):
@@ -245,7 +247,7 @@ def contrast(X):
     return fcons
 
 if __name__ == "__main__":
-    h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-test-ALL.hdf5', 'r')
+    # h5_file = h5py.File('C:\\Users\\haoli\\Documents\\pcavision\\hdf5_create\\prostatex-test-ALL.hdf5', 'r')
 
     # extract info for matching MRI type name
     #X, y, attr = get_train_data(h5_file, ['ADC'])  # gets all images of specified type
@@ -261,16 +263,8 @@ if __name__ == "__main__":
     print(c)
 
     # write numpy array and dictionary to files so only have to run program once
-    save('test_feature_mat_pz.npy', a)
-    save('testallclinsig_vect_pz.npy', b)
-    with open('testallfeature_dict.txt', 'wb') as handle:
-        pickle.dump(c, handle)
-
-
-
-
-
-
+    save('test_feature_mat_as.npy', a)
+    save('test_clinsig_vect_as.npy', b)
 
 
     # Nothin to see here folks...
