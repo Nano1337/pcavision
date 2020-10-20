@@ -2,19 +2,22 @@ import pickle
 import numpy as np
 from numpy import load, interp
 from sklearn.metrics import roc_curve, auc, precision_recall_curve, f1_score, roc_auc_score, classification_report
-from sklearn.model_selection import train_test_split, StratifiedKFold
-from sklearn import metrics, model_selection
+from sklearn.model_selection import train_test_split, StratifiedKFold, RandomizedSearchCV
 from sklearn.linear_model import LogisticRegression
-import sklearn
 from sklearn.ensemble import RandomForestClassifier
 import matplotlib.pyplot as plt
 from sklearn.utils import shuffle
+import xgboost as xgb
+from scipy.stats import uniform, randint, norm
+import statsmodels.api as sm
+
 
 def make_test_PRC(X_train, y_train, X_test, y_test):
     # fit a model
-    model = LogisticRegression(penalty='l1', solver='liblinear')
-    # model = sklearn.svm.SVC(C=0.05, kernel='rbf', probability=True)
+    # model = LogisticRegression(penalty='l1', solver='liblinear')
+    # model = sklearn.svm.SVC(C=0.001, kernel='rbf', probability=True)
     # model = RandomForestClassifier(criterion='entropy', n_estimators=1000)
+    model = xgb.XGBClassifier(objective='binary:logistic', colsample_bytree=0.7302334004132279, gamma=0.009110912825774864, learning_rate=0.05833288822677851, max_depth=4, n_estimators=122, subsample=0.6284754593840916)
     model.fit(X_train, y_train)
 
     # predict probabilities
@@ -25,7 +28,7 @@ def make_test_PRC(X_train, y_train, X_test, y_test):
 
     # predict class values
     yhat = model.predict(X_test)
-    lr_precision, lr_recall, _ = precision_recall_curve(y_test, lr_probs)
+    lr_precision, lr_recall, thresholds = precision_recall_curve(y_test, lr_probs)
     lr_f1, lr_auc = f1_score(y_test, yhat), auc(lr_recall, lr_precision)
 
     # calculate and plot mean PRC line
@@ -43,10 +46,16 @@ def make_test_PRC(X_train, y_train, X_test, y_test):
     plt.ylim([-0.01, 1.01])
     plt.xlabel('Recall Rate', fontsize=18)
     plt.ylabel('Precision Rate', fontsize=18)
-    plt.title('Test Set PRC of Logistic Regression', fontsize=18)
+    plt.title('Test Set PRC of XGBoost', fontsize=18)
     plt.legend(loc="lower left", prop={'size': 15})
     plt.show()
     print(classification_report(y_test, yhat))
+
+    importance = model.feature_importances_ 
+    plt.bar([x for x in range(len(importance[26:]))], importance[26:])
+    plt.show()
+
+    print(lr_precision[121], lr_recall[121], thresholds[121])
 def make_train_PRC(x, y):
     feature_mat, clinsig_vect = x, y
 
@@ -133,14 +142,15 @@ def make_test_ROC(X_train, y_train, X_test, y_test):
     X_test, y_test = shuffle(X_test, y_test)
 
     # fit a model
-    model = LogisticRegression(penalty='l1', solver='liblinear')
-    # model = sklearn.svm.SVC(C=0.05, kernel='rbf', probability=True)
+    # model = LogisticRegression(penalty='l1', solver='liblinear')
+    # model = sklearn.svm.SVC(C=0.001, kernel='rbf', probability=True)
     # model = RandomForestClassifier(criterion='entropy', n_estimators=1000)
+    model = xgb.XGBClassifier(objective='binary:logistic', colsample_bytree=0.7135656010318567, gamma=0.013183487248626002, learning_rate=0.14293901006341486, max_depth=2, n_estimators=117, subsample=0.9949104517259778)
     model.fit(X_train, y_train)
 
     # predict probabilities
     lr_probs = model.predict_proba(X_test)
-
+    print(type(lr_probs))
     # keep probabilities for positive outcome only
     lr_probs = lr_probs[:, 1]
     lr_auc = roc_auc_score(y_test, lr_probs)
@@ -158,11 +168,12 @@ def make_test_ROC(X_train, y_train, X_test, y_test):
     plt.ylim([-0.01, 1.01])
     plt.xlabel('False Positive Rate', fontsize=18)
     plt.ylabel('True Positive Rate', fontsize=18)
-    plt.title('Test Set ROC of Logistic Regression', fontsize=18)
+    plt.title('Test Set ROC of XGBoost', fontsize=18)
     plt.legend(loc="lower right", prop={'size': 15})
     plt.show()
 
-    print(model.coef_, model.intercept_)
+    # print(model.coef_, model.intercept_)
+
 def make_train_ROC(x, y):
     feature_mat, clinsig_vect = x, y
 
@@ -225,16 +236,47 @@ def make_train_ROC(x, y):
     plt.legend(loc="lower right", prop={'size': 15})
     plt.show()
 
+def search_hyperparameter(X, y):
+    xgb_model = xgb.XGBRegressor()
+
+    params = {
+        "colsample_bytree": uniform(0.7, 0.3),
+        "gamma": uniform(0, 0.5),
+        "learning_rate": uniform(0.03, 0.3),  # default 0.1
+        "max_depth": randint(2, 6),  # default 3
+        "n_estimators": randint(100, 150),  # default 100
+        "subsample": uniform(0.6, 0.4)
+    }
+
+    search = RandomizedSearchCV(xgb_model, param_distributions=params, random_state=42, n_iter=200, cv=3, verbose=1,
+                                n_jobs=1, return_train_score=True)
+
+    search.fit(X, y)
+
+    report_best_scores(search.cv_results_, 1)
+
+def report_best_scores(results, n_top=3):
+    for i in range(1, n_top + 1):
+        candidates = np.flatnonzero(results['rank_test_score'] == i)
+        for candidate in candidates:
+            print("Model with rank: {0}".format(i))
+            print("Mean validation score: {0:.3f} (std: {1:.3f})".format(
+                  results['mean_test_score'][candidate],
+                  results['std_test_score'][candidate]))
+            print("Parameters: {0}".format(results['params'][candidate]))
+            print("")
+
+
 if __name__ == "__main__":
 
     #load feature matrix, clinical significance vector, and feature dictionary from files
-    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\train_feature_mat_as.npy'
+    file1 ='C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\PZ\\train_feature_mat_pz.npy'
     feature_mat = load(file1)
     print("Reading back feature matrix")
     print(np.shape(feature_mat))
 
 
-    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\train_clinsig_vect_as.npy'
+    file2 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\PZ\\train_clinsig_vect_pz.npy'
     clinsig_vect = load(file2)
     print("Reading back clinical significance vector")
     print(np.shape(clinsig_vect))
@@ -244,12 +286,12 @@ if __name__ == "__main__":
     #     feature_dict = pickle.loads(handle.read())
     # print("Reading back feature dict")
 
-    file4 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_feature_mat_as.npy'
+    file4 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\PZ\\test_feature_mat_pz.npy'
     # \\test_feature_mat_pz.npy
     test_feature_mat = load(file4)
     print("Reading back testing feature matrix")
 
-    file5 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\test_clinsig_vect_as.npy'
+    file5 = 'C:\\Users\\haoli\\Documents\\pcavision\\feature_extraction\\PZ\\test_clinsig_vect_pz.npy'
     test_clinsig_vect = load(file5)
     print()
 
@@ -258,11 +300,14 @@ if __name__ == "__main__":
     # show ROC curve for training cross validation
     # make_train_ROC(feature_mat, clinsig_vect)
 
-    # make PRC curve for training cross validation
-    # make_train_PRC(feature_mat, clinsig_vect)
+    #make PRC curve for training cross validation
+    #make_train_PRC(feature_mat, clinsig_vect)
 
     # make ROC curve for test
-    make_test_ROC(feature_mat, clinsig_vect, test_feature_mat, test_clinsig_vect)
+    #make_test_ROC(feature_mat, clinsig_vect, test_feature_mat, test_clinsig_vect)
 
-    # make PRC curve for test
+    # make PRC curve for test and print coefficient vector
     make_test_PRC(feature_mat, clinsig_vect, test_feature_mat, test_clinsig_vect)
+
+    # get optimal hyperparameters for XGBoost
+    # search_hyperparameter(feature_mat, clinsig_vect)

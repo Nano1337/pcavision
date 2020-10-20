@@ -1,0 +1,1 @@
+This directory stores the program and files that allow for manual extraction of true negatives
